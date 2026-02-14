@@ -1,7 +1,4 @@
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import morgan from 'morgan';
+import triageRouter from './routes/triage';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -12,28 +9,8 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 
-// Models (Simplified for Skeleton)
-interface TriageSyncData {
-    patientId: string;
-    riskLevel: string;
-    timestamp: number;
-    deviceId: string;
-}
-
 // Routes
-app.post('/api/v1/sync', (req, res) => {
-    const data: TriageSyncData[] = req.body;
-    console.log(`Received sync request for ${data.length} records`);
-    // Logic: Save to PostgreSQL
-    res.status(200).json({ status: 'SUCCESS', syncedCount: data.length });
-});
-
-app.post('/api/v1/escalate', (req, res) => {
-    const { patientId, riskLevel, reason } = req.body;
-    console.log(`EMERGENCY: Escalation requested for Patient ${patientId}`);
-    // Logic: Trigger SMS/Notification to Doctor
-    res.status(200).json({ status: 'ESCALATED', contactDoctor: true });
-});
+app.use('/api/v1/triage', triageRouter);
 
 // Health Checks
 app.get('/health', (req, res) => {
