@@ -13,6 +13,13 @@ const App = () => {
   const [latestTriage, setLatestTriage] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
+
+  const handleInspect = (patient) => {
+    setSelectedPatient(patient);
+    setIsPanelOpen(true);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
