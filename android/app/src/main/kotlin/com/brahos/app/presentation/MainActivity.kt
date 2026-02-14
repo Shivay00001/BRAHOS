@@ -15,9 +15,23 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        // basic handling, assume granted for prototype
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
+        requestPermissionLauncher.launch(
+            arrayOf(
+                android.Manifest.permission.CAMERA,
+                android.Manifest.permission.RECORD_AUDIO
+            )
+        )
+
         scheduleSync()
 
         setContent {

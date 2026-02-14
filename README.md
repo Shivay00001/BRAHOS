@@ -8,8 +8,10 @@ BRAHOS is a state-of-the-art health triage system designed to bridge the healthc
 
 - **Offline-First AI**: On-device quantized LLM (Llama-3) and Vision (MobileNet) models for triage reasoning without internet.
 - **Multimodal Intake**: Support for voice-to-text (Whisper) in 12+ Indian languages and clinical image capture (skin, tongue, wounds).
+- **Advanced Diagnostics**: Cloud-free analysis of patient photos for Anemia (pallor) and Jaundice (icterus).
 - **Intelligent Triage**: Three-tier risk stratification (Green/Yellow/Red) with hard-coded safety guardrails.
-- **Opportunistic Sync**: Secure, low-bandwidth synchronization with PHC doctor dashboards using AWS India infrastructure.
+- **Offline Identity**: Instant patient lookup via encrypted QR codes, eliminating dependence on connectivity.
+- **Clinical Dashboard**: Real-time web interface for doctors to monitor high-risk cases and inspect patient data remotely.
 - **Privacy Core**: AES-256 encryption (SQLCipher) and Federated Learning to protect patient data.
 
 ## 📂 Documentation
@@ -19,8 +21,9 @@ BRAHOS is a state-of-the-art health triage system designed to bridge the healthc
 
 ## 🛠️ Tech Stack
 
-- **Mobile**: Android (Kotlin, Jetpack Compose, Room, TensorFlow Lite)
-- **Backend**: AWS (ECS Fargate, RDS PostgreSQL, S3)
+- **Mobile**: Android (Kotlin, Jetpack Compose, Room, TensorFlow Lite, ML Kit)
+- **Backend**: Node.js, Express, PostgreSQL, AWS (ECS Fargate, S3)
+- **Web**: React, Vite, CSS Modules
 - **AI**: Quantized Whisper-tiny, Distilled Llama-3-1B, MobileNetV3
 - **Security**: SQLCipher, TLS 1.3, Federated Learning
 
