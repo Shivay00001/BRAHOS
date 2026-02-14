@@ -11,122 +11,164 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.brahos.app.presentation.viewmodel.TriageViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
+import com.brahos.app.presentation.qr.QrScannerScreen
+import com.brahos.app.presentation.qr.QrDisplayDialog
+
+enum class TriageScreenMode { FORM, CAMERA, QR_SCANNER }
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TriageScreen(
     viewModel: TriageViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var showCamera by remember { mutableStateOf(false) }
+    var screenMode by remember { mutableStateOf(TriageScreenMode.FORM) }
+    var showQrDialog by remember { mutableStateOf(false) }
 
-    if (showCamera) {
-        CameraView(
-            onImageCaptured = {
-                viewModel.onImageCaptured(it)
-                showCamera = false
-            },
-            onError = {
-                showCamera = false
-            }
-        )
-    } else {
-        Scaffold(
-            topBar = {
-                TopAppBar(title = { Text("New Triage Assessment") })
-            }
-        ) { padding ->
-            Column(
-                modifier = Modifier
-                    .padding(padding)
-                    .padding(16.dp)
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // ... (Existing fields)
-                OutlinedTextField(
-                    value = uiState.patientId,
-                    onValueChange = { viewModel.onPatientDetailsChange(it, uiState.age, uiState.temperature) },
-                    label = { Text("Patient ID") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+    if (showQrDialog && uiState.patientId.isNotBlank()) {
+        QrDisplayDialog(content = uiState.patientId, onDismiss = { showQrDialog = false })
+    }
 
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
-                        value = if (uiState.age == 0) "" else uiState.age.toString(),
-                        onValueChange = { viewModel.onPatientDetailsChange(uiState.patientId, it.toIntOrNull() ?: 0, uiState.temperature) },
-                        label = { Text("Age") },
-                        modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                    )
-
-                    OutlinedTextField(
-                        value = uiState.temperature.toString(),
-                        onValueChange = { viewModel.onPatientDetailsChange(uiState.patientId, uiState.age, it.toFloatOrNull() ?: 37f) },
-                        label = { Text("Temp (°C)") },
-                        modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+    when (screenMode) {
+        TriageScreenMode.CAMERA -> {
+            CameraView(
+                onImageCaptured = {
+                    viewModel.onImageCaptured(it)
+                    screenMode = TriageScreenMode.FORM
+                },
+                onError = { screenMode = TriageScreenMode.FORM }
+            )
+        }
+        TriageScreenMode.QR_SCANNER -> {
+            QrScannerScreen(
+                onQrScanned = {
+                    viewModel.onPatientDetailsChange(it, uiState.age, uiState.temperature)
+                    screenMode = TriageScreenMode.FORM
+                }
+            )
+        }
+        TriageScreenMode.FORM -> {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text("New Triage Assessment") },
+                        actions = {
+                            if (uiState.patientId.isNotBlank()) {
+                                TextButton(onClick = { showQrDialog = true }) {
+                                    Text("Show QR")
+                                }
+                            }
+                        }
                     )
                 }
-
-                OutlinedTextField(
-                    value = uiState.symptoms,
-                    onValueChange = { viewModel.onSymptomChange(it) },
-                    label = { Text("Describe Symptoms") },
-                    modifier = Modifier.fillMaxWidth().height(120.dp),
-                    maxLines = 5
-                )
-
-                // Camera & Voice Intake Buttons
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(
-                        onClick = { showCamera = true },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-                    ) {
-                        Text("Capture Photo")
-                    }
-
-                    val context = LocalContext.current
-                    Button(
-                        onClick = { 
-                            if (uiState.isRecording) viewModel.stopRecording() 
-                            else viewModel.startRecording(context) 
-                        },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (uiState.isRecording) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary
-                        )
-                    ) {
-                        Text(if (uiState.isRecording) "Stop Recording" else "Voice Intake")
-                    }
-                }
-
-                if (uiState.isLoadingTranscription) {
-                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                    Text("Processing speech offline...", style = MaterialTheme.typography.bodySmall)
-                }
-
-                uiState.capturedImageUri?.let { uri ->
-                    Text("Image Attached: ${uri.lastPathSegment}", style = MaterialTheme.typography.bodySmall)
-                }
-
-                Button(
-                    onClick = { viewModel.submitTriage() },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !uiState.isLoading && uiState.patientId.isNotBlank()
+            ) { padding ->
+                Column(
+                    modifier = Modifier
+                        .padding(padding)
+                        .padding(16.dp)
+                        .fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    if (uiState.isLoading) {
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
-                    } else {
-                        Text("Analyze Safety & Triage")
+                    // ... (Existing fields)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = uiState.patientId,
+                            onValueChange = { viewModel.onPatientDetailsChange(it, uiState.age, uiState.temperature) },
+                            label = { Text("Patient ID") },
+                            modifier = Modifier.weight(1f)
+                        )
+                        Button(
+                            onClick = { screenMode = TriageScreenMode.QR_SCANNER },
+                            contentPadding = PaddingValues(0.dp),
+                            modifier = Modifier.width(48.dp)
+                        ) {
+                            Text("📷") // QR Icon placeholder
+                        }
                     }
-                }
 
-                uiState.assessmentResult?.let { result ->
-                    TriageResultCard(result)
-                }
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value = if (uiState.age == 0) "" else uiState.age.toString(),
+                            onValueChange = { viewModel.onPatientDetailsChange(uiState.patientId, it.toIntOrNull() ?: 0, uiState.temperature) },
+                            label = { Text("Age") },
+                            modifier = Modifier.weight(1f),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                        )
 
-                uiState.error?.let {
-                    Text(it, color = MaterialTheme.colorScheme.error)
+                        OutlinedTextField(
+                            value = uiState.temperature.toString(),
+                            onValueChange = { viewModel.onPatientDetailsChange(uiState.patientId, uiState.age, it.toFloatOrNull() ?: 37f) },
+                            label = { Text("Temp (°C)") },
+                            modifier = Modifier.weight(1f),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                        )
+                    }
+
+                    OutlinedTextField(
+                        value = uiState.symptoms,
+                        onValueChange = { viewModel.onSymptomChange(it) },
+                        label = { Text("Describe Symptoms") },
+                        modifier = Modifier.fillMaxWidth().height(120.dp),
+                        maxLines = 5
+                    )
+
+                    // Camera & Voice Intake Buttons
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(
+                            onClick = { screenMode = TriageScreenMode.CAMERA },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                        ) {
+                            Text("Capture Photo")
+                        }
+
+                        val context = LocalContext.current
+                        Button(
+                            onClick = { 
+                                if (uiState.isRecording) viewModel.stopRecording() 
+                                else viewModel.startRecording(context) 
+                            },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (uiState.isRecording) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary
+                            )
+                        ) {
+                            Text(if (uiState.isRecording) "Stop Recording" else "Voice Intake")
+                        }
+                    }
+
+                    if (uiState.isLoadingTranscription) {
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                        Text("Processing speech offline...", style = MaterialTheme.typography.bodySmall)
+                    }
+
+                    uiState.capturedImageUri?.let { uri ->
+                        Text("Image Attached: ${uri.lastPathSegment}", style = MaterialTheme.typography.bodySmall)
+                    }
+
+                    Button(
+                        onClick = { viewModel.submitTriage() },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !uiState.isLoading && uiState.patientId.isNotBlank()
+                    ) {
+                        if (uiState.isLoading) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
+                        } else {
+                            Text("Analyze Safety & Triage")
+                        }
+                    }
+
+                    uiState.assessmentResult?.let { result ->
+                        TriageResultCard(result)
+                    }
+
+                    uiState.error?.let {
+                        Text(it, color = MaterialTheme.colorScheme.error)
+                    }
                 }
             }
         }
