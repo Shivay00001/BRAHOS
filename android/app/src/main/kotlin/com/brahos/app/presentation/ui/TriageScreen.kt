@@ -75,13 +75,34 @@ fun TriageScreen(
                     maxLines = 5
                 )
 
-                // Camera Intake Button
-                Button(
-                    onClick = { showCamera = true },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-                ) {
-                    Text("Capture Patient/Record Photo")
+                // Camera & Voice Intake Buttons
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(
+                        onClick = { showCamera = true },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                    ) {
+                        Text("Capture Photo")
+                    }
+
+                    val context = LocalContext.current
+                    Button(
+                        onClick = { 
+                            if (uiState.isRecording) viewModel.stopRecording() 
+                            else viewModel.startRecording(context) 
+                        },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (uiState.isRecording) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary
+                        )
+                    ) {
+                        Text(if (uiState.isRecording) "Stop Recording" else "Voice Intake")
+                    }
+                }
+
+                if (uiState.isLoadingTranscription) {
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                    Text("Processing speech offline...", style = MaterialTheme.typography.bodySmall)
                 }
 
                 uiState.capturedImageUri?.let { uri ->

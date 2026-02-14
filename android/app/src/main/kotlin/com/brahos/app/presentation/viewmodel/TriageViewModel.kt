@@ -20,8 +20,43 @@ class TriageViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(TriageUiState())
     val uiState: StateFlow<TriageUiState> = _uiState.asStateFlow()
 
+    private var audioRecorder: com.brahos.app.util.AudioRecorder? = null
+    private var audioFile: java.io.File? = null
+
     fun onSymptomChange(symptoms: String) {
         _uiState.update { it.copy(symptoms = symptoms) }
+    }
+
+    fun startRecording(context: android.content.Context) {
+        val file = java.io.File(context.cacheDir, "temp_rec.pcm")
+        audioFile = file
+        audioRecorder = com.brahos.app.util.AudioRecorder(file)
+        _uiState.update { it.copy(isRecording = true) }
+        viewModelScope.launch {
+            try {
+                audioRecorder?.startRecording()
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isRecording = false, error = "Recording Error: ${e.localizedMessage}") }
+            }
+        }
+    }
+
+    fun stopRecording() {
+        audioRecorder?.stopRecording()
+        _uiState.update { it.copy(isRecording = false, isLoadingTranscription = true) }
+        
+        viewModelScope.launch {
+            audioFile?.let { file ->
+                // Simulate ProcessVoiceIntakeUseCase call (to be injected)
+                // result = processVoiceIntakeUseCase(file)
+                delay(1000) // Simulate processing time
+                val transcript = "Patient reports persistent fever and body ache"
+                _uiState.update { it.copy(
+                    symptoms = it.symptoms + (if (it.symptoms.isBlank()) "" else "\n") + transcript,
+                    isLoadingTranscription = false
+                ) }
+            }
+        }
     }
 
     fun onPatientDetailsChange(patientId: String, age: Int, temperature: Float) {
@@ -57,6 +92,8 @@ data class TriageUiState(
     val age: Int = 0,
     val temperature: Float = 37.0f,
     val capturedImageUri: android.net.Uri? = null,
+    val isRecording: Boolean = false,
+    val isLoadingTranscription: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
     val assessmentResult: TriageAssessment? = null

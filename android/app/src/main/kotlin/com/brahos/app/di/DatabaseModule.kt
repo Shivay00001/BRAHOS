@@ -14,6 +14,16 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
+object AIModule {
+    @Provides
+    @Singleton
+    fun provideWhisperEngine(@ApplicationContext context: Context): WhisperEngine {
+        return WhisperEngine(context)
+    }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
     @Provides
