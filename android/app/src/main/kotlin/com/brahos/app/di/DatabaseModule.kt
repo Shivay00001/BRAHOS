@@ -20,6 +20,12 @@ object AIModule {
     fun provideWhisperEngine(@ApplicationContext context: Context): WhisperEngine {
         return WhisperEngine(context)
     }
+
+    @Provides
+    @Singleton
+    fun provideTriageClassifier(@ApplicationContext context: Context): TfliteClassifier {
+        return TfliteClassifier(context, "risk_prediction.tflite")
+    }
 }
 
 @Module
