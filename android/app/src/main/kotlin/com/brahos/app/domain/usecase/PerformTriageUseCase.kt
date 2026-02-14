@@ -15,6 +15,7 @@ import javax.inject.Inject
 class PerformTriageUseCase @Inject constructor(
     private val safetyGuardrail: SafetyGuardrail,
     private val classifySymptomsUseCase: ClassifySymptomsUseCase,
+    private val analyzeVitalsUseCase: AnalyzeVitalsUseCase,
     private val repository: ConsultationRepository
 ) {
     suspend operator fun invoke(
@@ -27,6 +28,14 @@ class PerformTriageUseCase @Inject constructor(
         
         // Step 1: Local AI Prediction (TFLite Inference)
         val aiPredictedLevel = classifySymptomsUseCase(symptoms)
+        
+        // Step 1.5: Image Analysis for Vitals (if image exists)
+        val detectedVitals = if (imageUri != null) {
+            analyzeVitalsUseCase(imageUri)
+        } else {
+            emptyMap()
+        }
+
         val initialConfidence = 0.85f
 
         // Step 2: Apply Safety Guardrails (Deterministic Overrides)
@@ -44,9 +53,10 @@ class PerformTriageUseCase @Inject constructor(
             patientId = patientId,
             riskLevel = finalRiskLevel,
             primaryObservation = symptoms,
-            suggestions = generateSuggestions(finalRiskLevel),
+            suggestions = generateSuggestions(finalRiskLevel) + detectedVitals.keys.map { "Check for $it" }, // Add vital checks to suggestions
             requiresImmediateEscalation = isEmergency,
             imageUri = imageUri,
+            detectedVitals = detectedVitals,
             confidenceScore = if (isEmergency && aiPredictedLevel != RiskLevel.RED_EMERGENCY) 1.0f else initialConfidence
         )
 

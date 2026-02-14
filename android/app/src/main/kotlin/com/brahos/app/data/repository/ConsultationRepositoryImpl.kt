@@ -28,6 +28,10 @@ class ConsultationRepositoryImpl @Inject constructor(
         suggestions = suggestions.split(", "),
         requiresImmediateEscalation = isEmergency,
         imageUri = imagePath,
+        detectedVitals = detectedVitals?.split("|")?.associate {
+            val (k, v) = it.split(":")
+            k to v
+        } ?: emptyMap(),
         timestamp = timestamp,
         confidenceScore = confidence
     )
@@ -40,6 +44,7 @@ class ConsultationRepositoryImpl @Inject constructor(
         suggestions = suggestions.joinToString(", "),
         isEmergency = requiresImmediateEscalation,
         imagePath = imageUri,
+        detectedVitals = if (detectedVitals.isNotEmpty()) detectedVitals.entries.joinToString("|") { "${it.key}:${it.value}" } else null,
         timestamp = timestamp,
         confidence = confidenceScore
     )

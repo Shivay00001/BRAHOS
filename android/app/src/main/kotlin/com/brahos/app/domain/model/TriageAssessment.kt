@@ -14,6 +14,7 @@ data class TriageAssessment(
     val suggestions: List<String>,
     val requiresImmediateEscalation: Boolean,
     val imageUri: String? = null,
+    val detectedVitals: Map<String, String> = emptyMap(),
     val timestamp: Long = System.currentTimeMillis(),
     val confidenceScore: Float
 )
