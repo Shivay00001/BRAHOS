@@ -1,6 +1,6 @@
-import express from 'express';
 import type { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
+import { query } from '../config/db.js';
 
 const router = express.Router();
 
