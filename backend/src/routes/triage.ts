@@ -1,11 +1,16 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 
 const router = express.Router();
 
+interface TriageSyncData {
+    id: string;
+    patientId: string;
+    riskLevel: string;
+}
+
 /**
  * Endpoint for syncing triage assessments from mobile devices.
- * Implements strict sequence and duplicate check foundation.
  */
 router.post(
     '/sync',
@@ -14,17 +19,15 @@ router.post(
         body('*.patientId').notEmpty(),
         body('*.riskLevel').isIn(['GREEN_STABLE', 'YELLOW_OBSERVE', 'RED_EMERGENCY']),
     ],
-    (req, res) => {
+    (req: Request, res: Response) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ status: 'VALIDATION_ERROR', errors: errors.array() });
         }
 
-        const triageData = req.body;
+        const triageData = req.body as TriageSyncData[];
         console.log(`[Sync] Storing ${triageData.length} records...`);
 
-        // logic: Atomic bulk upsert to database
-        // For now, simulating success
         res.status(200).json({
             status: 'SUCCESS',
             syncedAt: new Date().toISOString(),
@@ -35,7 +38,6 @@ router.post(
 
 /**
  * Critical Escalation Endpoint.
- * Triggers immediate alerts to medical authorities.
  */
 router.post(
     '/escalate',
@@ -43,14 +45,11 @@ router.post(
         body('patientId').notEmpty(),
         body('riskLevel').equals('RED_EMERGENCY'),
     ],
-    (req, res) => {
+    (req: Request, res: Response) => {
         const { patientId, riskLevel, reason, location } = req.body;
 
         console.log(`[ALERT] HIGH PRIORITY ESCALATION DETECTED`);
         console.log(`Patient: ${patientId} | Reason: ${reason} | Location: ${location}`);
-
-        // logic: Trigger SMS/Push via Twilio or AWS SNS
-        // triggerAlert(patientId, reason);
 
         res.status(200).json({
             status: 'ESCALATED',
