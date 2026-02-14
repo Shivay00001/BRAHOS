@@ -27,6 +27,22 @@ BRAHOS is a state-of-the-art health triage system designed to bridge the healthc
 - **AI**: Quantized Whisper-tiny, Distilled Llama-3-1B, MobileNetV3
 - **Security**: SQLCipher, TLS 1.3, Federated Learning
 
+## 🏭 Production Readiness (Manual Actions)
+
+While the code is production-hardened, the following infrastructure steps must be performed manually before full-scale deployment:
+
+1. **Security**:
+    - [ ] **SSL/TLS**: Configure HTTPS using Let's Encrypt or AWS ACM.
+    - [ ] **Secrets**: Migrate API keys from `.env` to AWS Secrets Manager / Vault.
+    - [ ] **Model Protection**: Implement encryption for `.tflite` models to prevent theft.
+2. **Infrastructure**:
+    - [ ] **Database**: Migrate from Docker PostgreSQL to a managed AWS RDS instance with automated backups.
+    - [ ] **Load Balancing**: Set up Nginx or AWS ALB for traffic distribution.
+    - [ ] **Monitoring**: Deploy Prometheus/Grafana or CloudWatch for real-time metrics.
+3. **Clinical Validation**:
+    - [ ] **AI Training**: Fine-tune the placeholder TFLite models with real-world patient data.
+    - [ ] **Safety Audit**: Engage medical professionals to review `SafetyGuardrail.kt` logic.
+
 ## ⚖️ License
 
 This project is licensed under the [Business Source License 1.1 (BSL 1.1)](https://mariadb.com/bsl11/).
