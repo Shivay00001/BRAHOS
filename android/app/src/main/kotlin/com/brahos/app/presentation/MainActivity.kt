@@ -9,6 +9,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.brahos.app.presentation.ui.TriageScreen
 import com.brahos.app.presentation.ui.theme.BrahosTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -22,17 +23,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("ASHA Health Worker")
+                    TriageScreen()
                 }
             }
         }
     }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Welcome to BRAHOS, $name!",
-        modifier = modifier
-    )
 }
