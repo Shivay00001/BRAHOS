@@ -13,6 +13,8 @@ import javax.inject.Inject
  * 3. Final Persistence
  */
 class PerformTriageUseCase @Inject constructor(
+    private val safetyGuardrail: SafetyGuardrail,
+    private val classifySymptomsUseCase: ClassifySymptomsUseCase,
     private val repository: ConsultationRepository
 ) {
     suspend operator fun invoke(
@@ -23,14 +25,13 @@ class PerformTriageUseCase @Inject constructor(
         imageUri: String? = null
     ): TriageAssessment {
         
-        // Step 1: Simulated AI Prediction (to be replaced by TFLite/ExecuTorch)
-        // In a real scenario, this would call an AI model service/engine.
-        val aiPredictedLevel = simulateAiPrediction(symptoms)
+        // Step 1: Local AI Prediction (TFLite Inference)
+        val aiPredictedLevel = classifySymptomsUseCase(symptoms)
         val initialConfidence = 0.85f
 
         // Step 2: Apply Safety Guardrails (Deterministic Overrides)
         // This is the core "Bug prevention" and "Safety" layer requested by the user.
-        val finalRiskLevel = SafetyGuardrail.getSafeRiskLevel(
+        val finalRiskLevel = safetyGuardrail.getSafeRiskLevel(
             aiPredictedLevel, 
             symptoms, 
             age, 
@@ -55,13 +56,6 @@ class PerformTriageUseCase @Inject constructor(
         return assessment
     }
 
-    private fun simulateAiPrediction(symptoms: String): RiskLevel {
-        // Mock logic for initial integration
-        return when {
-            symptoms.lowercase().contains("fever") -> RiskLevel.YELLOW_OBSERVE
-            else -> RiskLevel.GREEN_STABLE
-        }
-    }
 
     private fun generateSuggestions(level: RiskLevel): List<String> {
         return when (level) {
