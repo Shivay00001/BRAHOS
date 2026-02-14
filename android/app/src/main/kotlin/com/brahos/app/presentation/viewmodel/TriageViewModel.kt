@@ -40,7 +40,8 @@ class TriageViewModel @Inject constructor(
                     patientId = _uiState.value.patientId,
                     symptoms = _uiState.value.symptoms,
                     age = _uiState.value.age,
-                    temperature = _uiState.value.temperature
+                    temperature = _uiState.value.temperature,
+                    imageUri = _uiState.value.capturedImageUri?.toString()
                 )
                 _uiState.update { it.copy(isLoading = false, assessmentResult = result) }
             } catch (e: Exception) {

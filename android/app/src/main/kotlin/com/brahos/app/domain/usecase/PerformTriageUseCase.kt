@@ -19,7 +19,8 @@ class PerformTriageUseCase @Inject constructor(
         patientId: String,
         symptoms: String,
         age: Int,
-        temperature: Float
+        temperature: Float,
+        imageUri: String? = null
     ): TriageAssessment {
         
         // Step 1: Simulated AI Prediction (to be replaced by TFLite/ExecuTorch)
@@ -44,6 +45,7 @@ class PerformTriageUseCase @Inject constructor(
             primaryObservation = symptoms,
             suggestions = generateSuggestions(finalRiskLevel),
             requiresImmediateEscalation = isEmergency,
+            imageUri = imageUri,
             confidenceScore = if (isEmergency && aiPredictedLevel != RiskLevel.RED_EMERGENCY) 1.0f else initialConfidence
         )
 

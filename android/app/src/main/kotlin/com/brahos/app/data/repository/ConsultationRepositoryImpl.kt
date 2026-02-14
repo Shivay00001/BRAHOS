@@ -12,15 +12,8 @@ class ConsultationRepositoryImpl @Inject constructor(
     private val dao: ConsultationDao
 ) : ConsultationRepository {
 
-    override fun getConsultations(): Flow<List<TriageAssessment>> {
-        return dao.getAllConsultations().map { entities ->
-            entities.map { it.toDomain() }
-        }
-    }
-
-    override fun saveAssessment(assessment: TriageAssessment) {
-        // Implementation would use dao.insertConsultation(assessment.toEntity())
-        // but for brevity I will leave the mapper as an extension below
+    override suspend fun saveAssessment(assessment: TriageAssessment) {
+        dao.insertConsultation(assessment.toEntity())
     }
 
     override suspend fun getAssessment(id: String): TriageAssessment? {
@@ -34,7 +27,20 @@ class ConsultationRepositoryImpl @Inject constructor(
         primaryObservation = symptoms,
         suggestions = suggestions.split(", "),
         requiresImmediateEscalation = isEmergency,
+        imageUri = imagePath,
         timestamp = timestamp,
         confidenceScore = confidence
+    )
+
+    private fun TriageAssessment.toEntity() = ConsultationEntity(
+        id = id,
+        patientId = patientId,
+        riskLevel = riskLevel,
+        symptoms = primaryObservation,
+        suggestions = suggestions.joinToString(", "),
+        isEmergency = requiresImmediateEscalation,
+        imagePath = imageUri,
+        timestamp = timestamp,
+        confidence = confidenceScore
     )
 }

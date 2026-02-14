@@ -12,6 +12,7 @@ data class ConsultationEntity(
     val symptoms: String,
     val suggestions: String, // Stored as comma-separated or JSON
     val isEmergency: Boolean,
+    val imagePath: String? = null,
     val timestamp: Long,
     val confidence: Float,
     val syncStatus: SyncStatus = SyncStatus.PENDING

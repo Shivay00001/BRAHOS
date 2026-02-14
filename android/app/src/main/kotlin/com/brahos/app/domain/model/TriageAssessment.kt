@@ -13,6 +13,7 @@ data class TriageAssessment(
     val primaryObservation: String,
     val suggestions: List<String>,
     val requiresImmediateEscalation: Boolean,
+    val imageUri: String? = null,
     val timestamp: Long = System.currentTimeMillis(),
     val confidenceScore: Float
 )
