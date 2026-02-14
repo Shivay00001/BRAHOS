@@ -21,16 +21,30 @@ class SyncTriageDataUseCase @Inject constructor(
         if (pendingAssessments.isEmpty()) return
 
         // 2. Map to domain/DTO and sync
-        // (Simplified mapping logic)
+        val triageList = pendingAssessments.map { entity ->
+            TriageAssessment(
+                id = entity.id,
+                patientId = entity.patientId,
+                riskLevel = entity.riskLevel,
+                primaryObservation = entity.symptoms,
+                suggestions = entity.suggestions.split(", "),
+                requiresImmediateEscalation = entity.isEmergency,
+                imageUri = entity.imagePath,
+                timestamp = entity.timestamp,
+                confidenceScore = entity.confidence
+            )
+        }
+
         try {
-            val response = apiService.syncAssessments(emptyList()) // Placeholder
+            val response = apiService.syncAssessments(triageList)
             if (response.isSuccessful) {
                 pendingAssessments.forEach {
                     dao.updateSyncStatus(it.id, SyncStatus.SYNCED)
                 }
             }
         } catch (e: Exception) {
-            // Log failure
+            // Log failure for WorkManager retry
+            throw e
         }
     }
 }
