@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import triageRouter from './routes/triage.js';
+import dashboardRouter from './routes/dashboard.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -15,6 +16,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/v1/triage', triageRouter);
+app.use('/api/v1/dashboard', dashboardRouter);
 
 // Health Checks
 app.get('/health', (req, res) => {
