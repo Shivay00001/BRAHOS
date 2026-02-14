@@ -14,7 +14,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TriageViewModel @Inject constructor(
-    private val performTriageUseCase: PerformTriageUseCase
+    private val performTriageUseCase: com.brahos.app.domain.usecase.PerformTriageUseCase,
+    private val processVoiceIntakeUseCase: com.brahos.app.domain.usecase.ProcessVoiceIntakeUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TriageUiState())
@@ -47,14 +48,18 @@ class TriageViewModel @Inject constructor(
         
         viewModelScope.launch {
             audioFile?.let { file ->
-                // Simulate ProcessVoiceIntakeUseCase call (to be injected)
-                // result = processVoiceIntakeUseCase(file)
-                delay(1000) // Simulate processing time
-                val transcript = "Patient reports persistent fever and body ache"
-                _uiState.update { it.copy(
-                    symptoms = it.symptoms + (if (it.symptoms.isBlank()) "" else "\n") + transcript,
-                    isLoadingTranscription = false
-                ) }
+                val result = processVoiceIntakeUseCase(file)
+                result.onSuccess { transcript ->
+                    _uiState.update { it.copy(
+                        symptoms = it.symptoms + (if (it.symptoms.isBlank()) "" else "\n") + transcript,
+                        isLoadingTranscription = false
+                    ) }
+                }.onFailure { e ->
+                    _uiState.update { it.copy(
+                        isLoadingTranscription = false,
+                        error = "Transcription failed: ${e.localizedMessage}"
+                    ) }
+                }
             }
         }
     }

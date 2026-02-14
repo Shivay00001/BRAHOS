@@ -1,4 +1,8 @@
-import triageRouter from './routes/triage';
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import triageRouter from './routes/triage.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
