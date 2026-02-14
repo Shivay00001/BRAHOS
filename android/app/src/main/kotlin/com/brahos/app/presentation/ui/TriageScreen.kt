@@ -58,6 +58,17 @@ fun TriageScreen(
                                     Text("Show QR")
                                 }
                             }
+                            val context = LocalContext.current
+                            IconButton(onClick = {
+                                val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO).apply {
+                                    data = android.net.Uri.parse("mailto:")
+                                    putExtra(android.content.Intent.EXTRA_EMAIL, arrayOf("support@brahos.org"))
+                                    putExtra(android.content.Intent.EXTRA_SUBJECT, "BRAHOS Bug Report")
+                                }
+                                context.startActivity(intent)
+                            }) {
+                                Text("🐞") // Report Issue Icon
+                            }
                         }
                     )
                 }
@@ -149,11 +160,17 @@ fun TriageScreen(
                     uiState.capturedImageUri?.let { uri ->
                         Text("Image Attached: ${uri.lastPathSegment}", style = MaterialTheme.typography.bodySmall)
                     }
+                    
+                    var isConsentGiven by remember { mutableStateOf(false) }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = isConsentGiven, onCheckedChange = { isConsentGiven = it })
+                        Text("Patient consents to data collection", style = MaterialTheme.typography.bodyMedium)
+                    }
 
                     Button(
                         onClick = { viewModel.submitTriage() },
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = !uiState.isLoading && uiState.patientId.isNotBlank()
+                        enabled = !uiState.isLoading && uiState.patientId.isNotBlank() && isConsentGiven
                     ) {
                         if (uiState.isLoading) {
                             CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
