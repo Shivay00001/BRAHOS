@@ -34,8 +34,15 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 header {
@@ -80,9 +87,17 @@ header {
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
 }
 
-.stat-card.risk-red { border-left: 4px solid var(--red); }
-.stat-card.risk-yellow { border-left: 4px solid var(--yellow); }
-.stat-card.risk-green { border-left: 4px solid var(--green); }
+.stat-card.risk-red {
+  border-left: 4px solid var(--red);
+}
+
+.stat-card.risk-yellow {
+  border-left: 4px solid var(--yellow);
+}
+
+.stat-card.risk-green {
+  border-left: 4px solid var(--green);
+}
 
 .triage-feed {
   background: var(--card-bg);
@@ -119,9 +134,23 @@ header {
   font-weight: 600;
 }
 
-.badge-red { background: rgba(239, 68, 68, 0.1); color: var(--red); border: 1px solid rgba(239, 68, 68, 0.2); }
-.badge-yellow { background: rgba(245, 158, 11, 0.1); color: var(--yellow); border: 1px solid rgba(245, 158, 11, 0.2); }
-.badge-green { background: rgba(16, 185, 129, 0.1); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.2); }
+.badge-red {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--red);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.badge-yellow {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--yellow);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.badge-green {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--green);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
 
 .vital-tag {
   display: inline-flex;
@@ -131,4 +160,34 @@ header {
   padding: 0.25rem 0.5rem;
   border-radius: 0.5rem;
   font-size: 0.875rem;
+}
+
+.side-panel {
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 450px;
+  background: #1e293b;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: -20px 0 50px rgba(0, 0, 0, 0.5);
+  padding: 2rem;
+  z-index: 1000;
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+}
+
+.side-panel.open {
+  transform: translateX(0);
+}
+
+.patient-image {
+  width: 100%;
+  aspect-ratio: 4/3;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 0.75rem;
+  margin: 1.5rem 0;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }

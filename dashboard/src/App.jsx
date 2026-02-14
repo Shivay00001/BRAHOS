@@ -1,31 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, AlertTriangle, CheckCircle, Clock, Shield, Search } from 'lucide-react';
 
+const BASE_URL = 'http://localhost:3000/api/v1/dashboard';
+
 const App = () => {
   const [summary, setSummary] = useState({
-    GREEN_STABLE: 12,
-    YELLOW_OBSERVE: 5,
-    RED_EMERGENCY: 2
+    GREEN_STABLE: 0,
+    YELLOW_OBSERVE: 0,
+    RED_EMERGENCY: 0
   });
 
-  const [latestTriage, setLatestTriage] = useState([
-    {
-      id: "1",
-      patient_id: "PB-9921",
-      risk_level: "RED_EMERGENCY",
-      primary_observation: "Persistent high fever, respiratory distress",
-      created_at: new Date().toISOString(),
-      confidence_score: 0.98
-    },
-    {
-      id: "2",
-      patient_id: "PB-9922",
-      risk_level: "YELLOW_OBSERVE",
-      primary_observation: "Fatigue, body ache, mild cough",
-      created_at: new Date(Date.now() - 3600000).toISOString(),
-      confidence_score: 0.85
-    }
-  ]);
+  const [latestTriage, setLatestTriage] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [sumRes, lateRes] = await Promise.all([
+          fetch(`${BASE_URL}/summary`),
+          fetch(`${BASE_URL}/latest`)
+        ]);
+
+        const sumData = await sumRes.json();
+        const lateData = await lateRes.json();
+
+        if (sumData.status === 'success') setSummary(sumData.data);
+        if (lateData.status === 'success') setLatestTriage(lateData.data);
+
+        setError(null);
+      } catch (err) {
+        console.error('Fetch failed:', err);
+        setError('Connection to BRAHOS Backend failed. Check server status.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 30000); // Polling every 30s
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="dashboard-container">
@@ -38,6 +53,14 @@ const App = () => {
           Live Connection
         </div>
       </header>
+
+      {error && (
+        <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--red)', padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', color: var(--red)}}>
+      <AlertTriangle size={20} style={{ marginRight: '8px' }} />
+      {error}
+    </div>
+  )
+}
 
       <div className="risk-overview">
         <div className="stat-card risk-red">
@@ -137,7 +160,7 @@ const App = () => {
           </tbody>
         </table>
       </div>
-    </div>
+    </div >
   );
 };
 
