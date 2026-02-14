@@ -17,6 +17,9 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        scheduleSync()
+
         setContent {
             BrahosTheme {
                 Surface(
@@ -27,5 +30,21 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun scheduleSync() {
+        val syncRequest = androidx.work.PeriodicWorkRequestBuilder<com.brahos.app.data.sync.SyncWorker>(
+            15, java.util.concurrent.TimeUnit.MINUTES
+        ).setConstraints(
+            androidx.work.Constraints.Builder()
+                .setRequiredNetworkType(androidx.work.NetworkType.CONNECTED)
+                .build()
+        ).build()
+
+        androidx.work.WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+            "BrahosSync",
+            androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+            syncRequest
+        )
     }
 }
