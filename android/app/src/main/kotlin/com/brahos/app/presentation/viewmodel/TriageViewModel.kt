@@ -28,6 +28,10 @@ class TriageViewModel @Inject constructor(
         _uiState.update { it.copy(patientId = patientId, age = age, temperature = temperature) }
     }
 
+    fun onImageCaptured(uri: android.net.Uri) {
+        _uiState.update { it.copy(capturedImageUri = uri) }
+    }
+
     fun submitTriage() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
@@ -51,6 +55,7 @@ data class TriageUiState(
     val symptoms: String = "",
     val age: Int = 0,
     val temperature: Float = 37.0f,
+    val capturedImageUri: android.net.Uri? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
     val assessmentResult: TriageAssessment? = null

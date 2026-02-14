@@ -16,70 +16,97 @@ fun TriageScreen(
     viewModel: TriageViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var showCamera by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("New Triage Assessment") })
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .padding(16.dp)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            OutlinedTextField(
-                value = uiState.patientId,
-                onValueChange = { viewModel.onPatientDetailsChange(it, uiState.age, uiState.temperature) },
-                label = { Text("Patient ID") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
-                    value = if (uiState.age == 0) "" else uiState.age.toString(),
-                    onValueChange = { viewModel.onPatientDetailsChange(uiState.patientId, it.toIntOrNull() ?: 0, uiState.temperature) },
-                    label = { Text("Age") },
-                    modifier = Modifier.weight(1f),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                )
-
-                OutlinedTextField(
-                    value = uiState.temperature.toString(),
-                    onValueChange = { viewModel.onPatientDetailsChange(uiState.patientId, uiState.age, it.toFloatOrNull() ?: 37f) },
-                    label = { Text("Temp (°C)") },
-                    modifier = Modifier.weight(1f),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-                )
+    if (showCamera) {
+        CameraView(
+            onImageCaptured = {
+                viewModel.onImageCaptured(it)
+                showCamera = false
+            },
+            onError = {
+                showCamera = false
             }
-
-            OutlinedTextField(
-                value = uiState.symptoms,
-                onValueChange = { viewModel.onSymptomChange(it) },
-                label = { Text("Describe Symptoms") },
-                modifier = Modifier.fillMaxWidth().height(120.dp),
-                maxLines = 5
-            )
-
-            Button(
-                onClick = { viewModel.submitTriage() },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = !uiState.isLoading && uiState.patientId.isNotBlank()
+        )
+    } else {
+        Scaffold(
+            topBar = {
+                TopAppBar(title = { Text("New Triage Assessment") })
+            }
+        ) { padding ->
+            Column(
+                modifier = Modifier
+                    .padding(padding)
+                    .padding(16.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                if (uiState.isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
-                } else {
-                    Text("Analyze Safety & Triage")
+                // ... (Existing fields)
+                OutlinedTextField(
+                    value = uiState.patientId,
+                    onValueChange = { viewModel.onPatientDetailsChange(it, uiState.age, uiState.temperature) },
+                    label = { Text("Patient ID") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = if (uiState.age == 0) "" else uiState.age.toString(),
+                        onValueChange = { viewModel.onPatientDetailsChange(uiState.patientId, it.toIntOrNull() ?: 0, uiState.temperature) },
+                        label = { Text("Age") },
+                        modifier = Modifier.weight(1f),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    )
+
+                    OutlinedTextField(
+                        value = uiState.temperature.toString(),
+                        onValueChange = { viewModel.onPatientDetailsChange(uiState.patientId, uiState.age, it.toFloatOrNull() ?: 37f) },
+                        label = { Text("Temp (°C)") },
+                        modifier = Modifier.weight(1f),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                    )
                 }
-            }
 
-            uiState.assessmentResult?.let { result ->
-                TriageResultCard(result)
-            }
+                OutlinedTextField(
+                    value = uiState.symptoms,
+                    onValueChange = { viewModel.onSymptomChange(it) },
+                    label = { Text("Describe Symptoms") },
+                    modifier = Modifier.fillMaxWidth().height(120.dp),
+                    maxLines = 5
+                )
 
-            uiState.error?.let {
-                Text(it, color = MaterialTheme.colorScheme.error)
+                // Camera Intake Button
+                Button(
+                    onClick = { showCamera = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                ) {
+                    Text("Capture Patient/Record Photo")
+                }
+
+                uiState.capturedImageUri?.let { uri ->
+                    Text("Image Attached: ${uri.lastPathSegment}", style = MaterialTheme.typography.bodySmall)
+                }
+
+                Button(
+                    onClick = { viewModel.submitTriage() },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !uiState.isLoading && uiState.patientId.isNotBlank()
+                ) {
+                    if (uiState.isLoading) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
+                    } else {
+                        Text("Analyze Safety & Triage")
+                    }
+                }
+
+                uiState.assessmentResult?.let { result ->
+                    TriageResultCard(result)
+                }
+
+                uiState.error?.let {
+                    Text(it, color = MaterialTheme.colorScheme.error)
+                }
             }
         }
     }
