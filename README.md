@@ -46,3 +46,21 @@ While the code is production-hardened, the following infrastructure steps must b
 ## ⚖️ License
 
 This project is licensed under the [Business Source License 1.1 (BSL 1.1)](https://mariadb.com/bsl11/).
+
+## ⚙️ Installation
+
+### Prerequisites
+- JDK 11+
+- Android Studio
+- Node.js & npm (for backend/dashboard)
+- Docker & Docker Compose (optional for quick backend setup)
+
+### Steps
+1. Clone the repository: `git clone https://github.com/Shivay00001/BRAHOS.git`
+2. Open the `android` folder in Android Studio and sync Gradle.
+3. For backend, navigate to `backend` and run `npm install`.
+
+## 🚀 Usage
+
+- **Android App:** Run the app from Android Studio on an emulator or physical device.
+- **Backend:** Create a `.env` file based on `.env.example` and run `npm start` (or use `docker-compose up` if configured).
